@@ -717,7 +717,7 @@ export function Orders() {
                 {/* Order Details */}
                 <div className="space-y-3 sm:space-y-4">
                   <h3 className="font-medium text-sm sm:text-base">Order Details</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="orderDate">Order Date</Label>
                       <DatePicker
@@ -794,7 +794,7 @@ export function Orders() {
                             <Label>Product</Label>
                             <Select 
                               value={item.productId} 
-                              onValueChange={(value) => handleProductChange(index, value)}
+                              onValueChange={(value: string) => handleProductChange(index, value)}
                             >
                               <SelectTrigger>
                                 <SelectValue placeholder="Select product" />
@@ -814,7 +814,7 @@ export function Orders() {
                               <Label>Select Unit (Serial Number - Expiry)</Label>
                               <Select 
                                 value={item.unitId} 
-                                onValueChange={(value) => handleUnitChange(index, value)}
+                                onValueChange={(value: string) => handleUnitChange(index, value)}
                               >
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select unit" />
