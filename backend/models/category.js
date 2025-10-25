@@ -7,8 +7,8 @@ const categorySchema = new Schema({
     type: { 
         type: String, 
         required: true,
-        unique: true,
-        enum: ['whey-protein', 'creatine', 'peanut-butter', 'pre-workout', 'other']
+        unique: true
+        // Removed enum restriction to allow custom categories
     },
     description: { type: String, required: false },
     image: { type: String, required: false }

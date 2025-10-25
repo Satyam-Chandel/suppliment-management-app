@@ -7,10 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Badge } from "./ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
-import { ChevronDown, ChevronRight, Loader2, X } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
+import { ChevronDown, ChevronRight, Loader2, X, Plus } from "lucide-react";
 import { SupplementType, SupplementProduct } from "../types";
 import { toast } from "sonner";
-import { productsApi } from "../services/api";
+import { productsApi, metadataApi } from "../services/api";
 import { getErrorMessage } from "../utils/errorHandler";
 
 const supplementTypes: { value: SupplementType; label: string }[] = [
@@ -54,6 +55,16 @@ export function StockEntry({ initialTab = "add-stock", initialCategory, userRole
     initialCategory ? { [initialCategory]: true } : {}
   );
   const [activeTab, setActiveTab] = useState(initialTab);
+  
+  // New category dialog state
+  const [isNewCategoryDialogOpen, setIsNewCategoryDialogOpen] = useState(false);
+  const [newCategoryData, setNewCategoryData] = useState({
+    name: "",
+    type: "",
+    description: "",
+    image: ""
+  });
+  const [creatingCategory, setCreatingCategory] = useState(false);
 
   useEffect(() => {
     loadProducts();
@@ -198,6 +209,34 @@ export function StockEntry({ initialTab = "add-stock", initialCategory, userRole
     }
   };
 
+  const handleCreateCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newCategoryData.name || !newCategoryData.type) {
+      toast.error("Please fill in category name and type");
+      return;
+    }
+
+    setCreatingCategory(true);
+    try {
+      await metadataApi.createCategory(newCategoryData);
+      toast.success("Category created successfully");
+      
+      // Close dialog and reset form
+      setIsNewCategoryDialogOpen(false);
+      setNewCategoryData({
+        name: "",
+        type: "",
+        description: "",
+        image: ""
+      });
+    } catch (error: any) {
+      toast.error(getErrorMessage(error, 'Failed to create category'));
+    } finally {
+      setCreatingCategory(false);
+    }
+  };
+
   return (
     <div className="p-3 sm:p-4 md:p-6">
       <div className="mb-4 sm:mb-6">
@@ -246,7 +285,13 @@ export function StockEntry({ initialTab = "add-stock", initialCategory, userRole
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="type">Supplement Type</Label>
-                    <Select value={formData.type} onValueChange={(value) => handleInputChange("type", value)}>
+                    <Select value={formData.type} onValueChange={(value: string) => {
+                      if (value === "new-category") {
+                        setIsNewCategoryDialogOpen(true);
+                      } else {
+                        handleInputChange("type", value);
+                      }
+                    }}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select supplement type" />
                       </SelectTrigger>
@@ -256,6 +301,12 @@ export function StockEntry({ initialTab = "add-stock", initialCategory, userRole
                             {type.label}
                           </SelectItem>
                         ))}
+                        <SelectItem value="new-category" className="text-primary font-medium">
+                          <div className="flex items-center gap-2">
+                            <Plus className="h-4 w-4" />
+                            <span>New Category</span>
+                          </div>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -521,6 +572,79 @@ export function StockEntry({ initialTab = "add-stock", initialCategory, userRole
           )}
         </TabsContent>
       </Tabs>
+
+      {/* New Category Dialog */}
+      <Dialog open={isNewCategoryDialogOpen} onOpenChange={setIsNewCategoryDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Create New Category</DialogTitle>
+            <DialogDescription>
+              Add a new supplement category to organize your products.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateCategory} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="categoryName">Category Name *</Label>
+              <Input
+                id="categoryName"
+                value={newCategoryData.name}
+                onChange={(e) => setNewCategoryData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="e.g., Mass Gainers"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="categoryType">Category Type (URL-friendly) *</Label>
+              <Input
+                id="categoryType"
+                value={newCategoryData.type}
+                onChange={(e) => setNewCategoryData(prev => ({ ...prev, type: e.target.value.toLowerCase().replace(/\s+/g, '-') }))}
+                placeholder="e.g., mass-gainer"
+                required
+              />
+              <p className="text-xs text-muted-foreground">This will be used for product categorization</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="categoryDescription">Description (Optional)</Label>
+              <Input
+                id="categoryDescription"
+                value={newCategoryData.description}
+                onChange={(e) => setNewCategoryData(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Brief description of this category"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="categoryImage">Image URL (Optional)</Label>
+              <Input
+                id="categoryImage"
+                value={newCategoryData.image}
+                onChange={(e) => setNewCategoryData(prev => ({ ...prev, image: e.target.value }))}
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setIsNewCategoryDialogOpen(false)}
+                disabled={creatingCategory}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={creatingCategory}>
+                {creatingCategory ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Category'
+                )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

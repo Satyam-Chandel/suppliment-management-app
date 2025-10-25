@@ -1,4 +1,4 @@
-export type SupplementType = "whey-protein" | "creatine" | "peanut-butter" | "pre-workout" | "other";
+export type SupplementType = "whey-protein" | "creatine" | "peanut-butter" | "pre-workout" | "other" | string;
 
 export interface SupplementCategory {
   id: string;
