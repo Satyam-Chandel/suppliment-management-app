@@ -8,6 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "./ui/sidebar";
 
 const items = [
@@ -55,6 +56,8 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ activeSection, onSectionChange, userRole }: AppSidebarProps) {
+  const { isMobile, setOpenMobile } = useSidebar();
+  
   // Filter items based on user role
   const visibleItems = items.filter(item => {
     if (item.adminOnly) {
@@ -62,6 +65,15 @@ export function AppSidebar({ activeSection, onSectionChange, userRole }: AppSide
     }
     return true;
   });
+
+  const handleMenuItemClick = (key: string) => {
+    onSectionChange(key);
+    // Close sidebar on mobile when a menu item is clicked
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -76,7 +88,7 @@ export function AppSidebar({ activeSection, onSectionChange, userRole }: AppSide
                     isActive={activeSection === item.key}
                   >
                     <button 
-                      onClick={() => onSectionChange(item.key)}
+                      onClick={() => handleMenuItemClick(item.key)}
                       className="w-full"
                     >
                       <item.icon />
