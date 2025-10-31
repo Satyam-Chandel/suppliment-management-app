@@ -69,7 +69,7 @@ app.use((error, req, res, next) => {
 
 // Database connection and server start
 const MONGODB_URI = process.env.MONGODB_URI;
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Validate that required environment variables are set
 if (!MONGODB_URI) {
