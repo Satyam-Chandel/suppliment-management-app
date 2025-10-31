@@ -55,6 +55,7 @@
         "@types/react-dom": "^18.3.1",
         "@vitejs/plugin-react-swc": "^3.10.2",
         "autoprefixer": "^10.4.20",
+        "concurrently": "^7.6.0",
         "postcss": "^8.4.49",
         "tailwindcss": "^3.4.15",
         "tailwindcss-animate": "^1.0.7",
@@ -62,7 +63,9 @@
         "vite": "^4.5.0"
     },
     "scripts": {
-        "dev": "vite",
+        "dev": "concurrently -n \"FRONTEND,BACKEND\" -c \"cyan,green\" \"npm run dev:frontend\" \"npm run dev:backend\"",
+        "dev:frontend": "vite",
+        "dev:backend": "cd backend && npx nodemon app.js",
         "build": "tsc && vite build",
         "preview": "vite preview",
         "type-check": "tsc --noEmit"
